@@ -5,62 +5,56 @@ namespace Homework.Common
 {
     public static class Helpers
     {
-        public static IWebDriver GoToUrl(this IWebDriver webDriver, string url)
+        public static IWebDriver ChangeNumberOfElementsFromCart(this IWebDriver webDriver, int numberOfItems)
         {
-            webDriver
-                .Navigate()
-                .GoToUrl(url);
-
+            
+            if(numberOfItems - 1 >= 0)
+            {
+                var numberOfCartElements = webDriver
+                .FindElement(By.XPath("//span[contains(@class, 'select2-selection select2-selection--single')]"));
+                numberOfCartElements.Click();
+                Thread.Sleep(1000);
+                var listOfValues = webDriver
+                    .FindElements(By.XPath("//ul[contains(@class, 'select2-results__options')]/li"));
+                listOfValues[numberOfItems - 1].Click();
+            }
+            else
+            {
+                webDriver
+                    .FindElement(By.XPath("//a[contains(@class, 'emg-right remove-product btn-remove-product gtm_rp080219')]"))
+                    .Click();
+                Thread.Sleep(2000);
+            }
             return webDriver;
         }
-
-        public static IWebElement ExecuteJS(this IWebElement webElement, IWebDriver webDriver, string script)
+        public static IWebDriver Add2ItemsToCart(this IWebDriver webDriver)
         {
-            // Parse to ScriptExecutor.
-            var scriptExecutor = (IJavaScriptExecutor)webDriver;
-
-            // Execute script.
-            scriptExecutor.ExecuteScript(script, webElement);
-
-            return webElement;
-        }
-
-        public static IWebElement ScrollTo(this IWebElement webElement, IWebDriver webDriver)
-        {
-            return webElement.ExecuteJS(webDriver, "arguments[0].scrollIntoView(true);");
-        }
-
-        public static IWebElement SendKeys(this IWebElement webElement, IWebDriver webDriver, bool clear, params string[] keys)
-        {
-            // Select all instead of clear.
-            if (clear && new[] { "input", "textarea" }.Contains(webElement.TagName, StringComparer.OrdinalIgnoreCase))
-            {
-                Actions action = new Actions(webDriver);
-                action.KeyDown(Keys.Control).SendKeys("a").KeyUp(Keys.Control).Perform();
-                webElement.SendKeys(Keys.Backspace);
-            }
-
-            if (keys?.Any() == true)
-            {
-                var a = new Actions(webDriver).MoveToElement(webElement.ScrollTo(webDriver));
-
-                // Append keys.
-                foreach (var k in keys)
-                {
-                    a = a.SendKeys(webElement, k);
-                }
-
-                // Perform actions.
-                a.Perform();
-            }
-
-            // Return the web element.
-            return webElement;
-        }
-
-        public static IWebElement SetText(this IWebElement webElement, IWebDriver webDriver, string value, bool clear = false)
-        {
-            return SendKeys(webElement, webDriver, clear, value);
+            Thread.Sleep(1000);
+            webDriver
+                .FindElement(By.XPath("//button[contains(@class, 'btn btn-primary js-accept gtm_h76e8zjgoo btn-block')]"))
+                .Click();
+            Thread.Sleep(1000);
+            webDriver
+                .FindElement(By.XPath("//button[contains(@class, 'js-dismiss-login-notice-btn dismiss-btn btn btn-link pad-sep-none pad-hrz-none')]"))
+                .Click();
+            var listOfElements = webDriver
+               .FindElements(By.XPath("//button[contains(@class, 'btn btn-sm btn-primary btn-emag btn-block yeahIWantThisProduct')]"));
+            Actions actions = new Actions(webDriver);
+            actions.MoveToElement(listOfElements[0]);
+            actions.Perform();
+            listOfElements[0].Click();
+            Thread.Sleep(1000);
+            webDriver
+                .FindElement(By.XPath("//button[contains(@class, 'close gtm_6046yfqs')]"))
+                .Click();
+            Thread.Sleep(1000);
+            listOfElements[0].Click();
+            Thread.Sleep(1000);
+            webDriver
+                .FindElement(By.XPath("//a[contains(@class, 'btn btn-primary btn-sm btn-block')]"))
+                .Click();
+            Thread.Sleep(1000);
+            return webDriver;
         }
     }
 }
